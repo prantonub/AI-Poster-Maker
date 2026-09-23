@@ -1,0 +1,10 @@
+{
+  "name": "ai-political-poster-maker",
+  "private": true,
+  "workspaces": ["frontend", "backend", "shared"],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "seed:templates": "npm run seed:templates --workspace=backend"
+  }
+}
