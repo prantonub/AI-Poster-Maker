@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @page { margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1200px;
+    height: 1600px;
+    font-family: "Noto Sans Bengali", "SolaimanLipi", sans-serif;
+    overflow: hidden;
+  }
+  .poster {
+    position: relative;
+    width: 1200px;
+    height: 1600px;
+    background: linear-gradient(180deg, {{primaryColor}} 0%, {{primaryColor}} 45%, #ffffff 45%, #ffffff 100%);
+    overflow: hidden;
+  }
+  .flag-stripe {
+    position: absolute; top: 0; left: 0; right: 0; height: 20px;
+    background: repeating-linear-gradient(
+      90deg, {{primaryColor}} 0 60px, {{secondaryColor}} 60px 120px
+    );
+    z-index: 10;
+  }
+
+  /* ---- Sunburst + glowing disc backdrop ---- */
+  .rays {
+    position: absolute;
+    top: 470px; left: 600px;
+    width: 900px; height: 900px;
+    margin: -450px 0 0 -450px;
+    border-radius: 50%;
+    background: repeating-conic-gradient(
+      from 0deg,
+      rgba(255,255,255,0.16) 0deg 4deg,
+      transparent 4deg 14deg
+    );
+  }
+  .sun-disc {
+    position: absolute;
+    top: 470px; left: 600px;
+    width: 620px; height: 620px;
+    margin: -310px 0 0 -310px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, {{accentColor}} 0%, {{secondaryColor}} 62%, {{secondaryColor}} 100%);
+    box-shadow: 0 0 80px 10px rgba(0,0,0,0.2) inset, 0 20px 60px rgba(0,0,0,0.25);
+  }
+
+  /* ---- Monument silhouette (generic Shaheed Minar-style columns) ---- */
+  .monument {
+    position: absolute;
+    bottom: 780px; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    z-index: 3;
+  }
+  .monument .col {
+    width: 26px;
+    background: linear-gradient(180deg, #ffffff 0%, #eef2f0 100%);
+    border-radius: 6px 6px 0 0;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  }
+  .monument .col.c1 { height: 170px; }
+  .monument .col.c2 { height: 230px; }
+  .monument .col.c3 { height: 300px; }
+  .monument .col.c4 { height: 230px; }
+  .monument .col.c5 { height: 170px; }
+  .flag-on-pole {
+    position: absolute;
+    bottom: 1075px; left: 50%;
+    transform: translateX(-50%);
+    width: 4px; height: 130px;
+    background: #f4f4f4;
+    z-index: 4;
+  }
+  .flag-on-pole::after {
+    content: "";
+    position: absolute; top: 0; left: 4px;
+    width: 60px; height: 40px;
+    background: {{secondaryColor}};
+    clip-path: polygon(0 0, 100% 15%, 0 100%);
+  }
+
+  /* ---- Photo cutouts ---- */
+  .photo-row {
+    position: absolute; top: 46px; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 26px;
+    z-index: 11;
+  }
+  .photo-placeholder {
+    background: linear-gradient(135deg, {{secondaryColor}}55, {{accentColor}}55);
+  }
+  .photo-cutout {
+    width: 160px; height: 160px; border-radius: 50%;
+    border: 6px solid #ffffff;
+    outline: 3px solid {{accentColor}};
+    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    object-fit: cover;
+    background: #eee;
+  }
+
+  /* ---- Cloud bank separating the sky scene from the headline ---- */
+  .cloud-bank {
+    position: absolute;
+    bottom: 700px; left: -40px; right: -40px;
+    height: 130px;
+    filter: drop-shadow(0 12px 18px rgba(0,0,0,0.18));
+    z-index: 5;
+  }
+  .cloud-bank .puff {
+    position: absolute; bottom: 0;
+    background: #ffffff;
+    border-radius: 50%;
+  }
+  .cloud-bank .base {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+    background: #ffffff;
+  }
+
+  /* ---- Headline: layered depth via stacked text-shadow ---- */
+  .headline-wrap {
+    position: absolute; top: 900px; left: 50px; right: 50px;
+    text-align: center;
+    z-index: 6;
+  }
+  .headline {
+    color: {{primaryColor}};
+    font-size: 80px;
+    line-height: 1.18;
+    letter-spacing: 1px;
+    text-shadow:
+      1px 1px 0 rgba(0,0,0,0.12),
+      2px 2px 0 rgba(0,0,0,0.10),
+      3px 3px 0 rgba(0,0,0,0.08),
+      4px 6px 14px rgba(0,0,0,0.18);
+  }
+  .headline-rule {
+    margin: 18px auto 0;
+    width: 180px; height: 5px; border-radius: 3px;
+    background: linear-gradient(90deg, {{secondaryColor}}, {{accentColor}});
+  }
+
+  .party-symbol {
+    position: absolute; top: 1100px; left: 50%; transform: translateX(-50%);
+    background: {{accentColor}};
+    color: white; font-size: 26px; font-weight: 700;
+    padding: 14px 36px;
+    border-radius: 999px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    z-index: 6;
+  }
+
+  .footer-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 260px;
+    background: linear-gradient(180deg, {{primaryColor}} 0%, #00432f 100%);
+    color: white;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 24px;
+    text-align: center;
+    z-index: 6;
+  }
+  .footer-credit { font-size: 22px; opacity: 0.85; letter-spacing: 2px; }
+  .footer-name { font-size: 42px; font-weight: 800; }
+  .footer-meta { font-size: 26px; opacity: 0.95; }
+  .footer-location { font-size: 22px; opacity: 0.85; }
+</style>
+</head>
+<body>
+  <div class="poster">
+    <div class="flag-stripe"></div>
+
+    <div class="rays"></div>
+    <div class="sun-disc"></div>
+
+    <div class="flag-on-pole"></div>
+    <div class="monument">
+      <div class="col c1"></div>
+      <div class="col c2"></div>
+      <div class="col c3"></div>
+      <div class="col c4"></div>
+      <div class="col c5"></div>
+    </div>
+
+    <div class="photo-row">
+      {{#if photoUrls.[0]}}<img class="photo-cutout" src="{{photoUrls.[0]}}" />{{else}}<div class="photo-cutout photo-placeholder"></div>{{/if}}
+      {{#if photoUrls.[1]}}<img class="photo-cutout" src="{{photoUrls.[1]}}" />{{/if}}
+      {{#if photoUrls.[2]}}<img class="photo-cutout" src="{{photoUrls.[2]}}" />{{/if}}
+    </div>
+
+    <div class="cloud-bank">
+      <div class="base"></div>
+      <div class="puff" style="width:160px;height:160px;left:20px;bottom:20px;"></div>
+      <div class="puff" style="width:200px;height:200px;left:150px;bottom:10px;"></div>
+      <div class="puff" style="width:180px;height:180px;left:340px;bottom:25px;"></div>
+      <div class="puff" style="width:220px;height:220px;left:500px;bottom:5px;"></div>
+      <div class="puff" style="width:200px;height:200px;left:700px;bottom:15px;"></div>
+      <div class="puff" style="width:180px;height:180px;left:880px;bottom:25px;"></div>
+      <div class="puff" style="width:160px;height:160px;left:1040px;bottom:20px;"></div>
+    </div>
+
+    <div class="headline-wrap">
+      <div class="headline" style="font-weight: {{headlineFontWeightNumeric}};">{{headlineText}}</div>
+      <div class="headline-rule"></div>
+    </div>
+
+    <div class="party-symbol">{{party}}</div>
+
+    <div class="footer-bar">
+      <div class="footer-credit">প্রচারে</div>
+      <div class="footer-name">{{name}}</div>
+      <div class="footer-meta">{{designation}}</div>
+      <div class="footer-location">{{district}}, {{thana}}, {{union}}</div>
+    </div>
+  </div>
+</body>
+</html>

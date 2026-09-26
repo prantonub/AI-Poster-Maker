@@ -1,3 +1,10 @@
 {
-  "/page": "app/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/create/page": "app/create/page.js",
+  "/login/page": "app/login/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/history/page": "app/history/page.js",
+  "/page": "app/page.js",
+  "/register/page": "app/register/page.js",
+  "/posters/[id]/page": "app/posters/[id]/page.js"
 }

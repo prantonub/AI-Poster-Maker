@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @page { margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1200px;
+    height: 1600px;
+    font-family: "Noto Sans Bengali", "SolaimanLipi", sans-serif;
+    overflow: hidden;
+  }
+  .poster {
+    position: relative;
+    width: 1200px;
+    height: 1600px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  /* Dynamic diagonal color block */
+  .diagonal-block {
+    position: absolute; top: 0; left: 0; right: 0; height: 900px;
+    background: linear-gradient(135deg, {{primaryColor}} 0%, {{primaryColor}} 70%, {{secondaryColor}} 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 78%, 0 100%);
+  }
+  /* Forward-momentum chevrons along the diagonal edge */
+  .chevrons {
+    position: absolute; top: 860px; left: 0; right: 0; height: 60px;
+    display: flex; justify-content: center; gap: 4px;
+    opacity: 0.9;
+  }
+  .chevrons .v {
+    width: 0; height: 0;
+    border-left: 22px solid transparent;
+    border-right: 22px solid transparent;
+    border-top: 26px solid {{accentColor}};
+  }
+
+  /* Vote / checkmark badge */
+  .vote-badge {
+    position: absolute; top: 46px; right: 46px;
+    width: 130px; height: 130px; border-radius: 50%;
+    background: {{accentColor}};
+    box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 8;
+  }
+  .vote-badge svg { width: 68px; height: 68px; }
+
+  /* Stacked angled photo cards */
+  .photo-stack {
+    position: absolute; top: 90px; left: 60px;
+    z-index: 6;
+  }
+  .photo-placeholder {
+    background: linear-gradient(135deg, {{primaryColor}}55, {{secondaryColor}}55);
+  }
+  .photo-card {
+    position: absolute;
+    width: 260px; height: 320px;
+    border: 6px solid #ffffff;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.35);
+    object-fit: cover;
+    background: #ddd;
+  }
+  .photo-card.back {
+    top: 40px; left: 150px;
+    transform: rotate(6deg);
+    clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
+  }
+  .photo-card.front {
+    top: 0; left: 0;
+    transform: rotate(-4deg);
+    clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
+  }
+
+  .headline-banner {
+    position: absolute; top: 560px; left: 0; right: 0;
+    z-index: 7;
+  }
+  .headline-banner .stripe {
+    background: {{secondaryColor}};
+    padding: 18px 40px;
+    transform: skewX(-8deg);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+    margin: 0 40px;
+  }
+  .headline {
+    transform: skewX(8deg);
+    color: #ffffff;
+    font-size: 76px;
+    line-height: 1.15;
+    text-align: center;
+    text-shadow: 2px 3px 0 rgba(0,0,0,0.2);
+  }
+
+  .party-banner {
+    position: absolute; top: 950px; left: 50%; transform: translateX(-50%);
+    background: {{primaryColor}};
+    color: white;
+    padding: 20px 56px;
+    border-radius: 6px;
+    font-size: 44px;
+    font-weight: 700;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .party-banner .flag-tri {
+    width: 0; height: 0;
+    border-top: 16px solid transparent;
+    border-bottom: 16px solid transparent;
+    border-left: 22px solid {{accentColor}};
+  }
+
+  .slogan-row {
+    position: absolute; top: 1060px; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+  }
+  .slogan-row .tick {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: {{accentColor}};
+    display: flex; align-items: center; justify-content: center;
+  }
+  .slogan-row .tick svg { width: 18px; height: 18px; }
+  .slogan {
+    color: {{primaryColor}};
+    font-size: 38px;
+    font-weight: 700;
+  }
+
+  .footer-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 260px;
+    background: {{primaryColor}};
+    clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%);
+    color: white;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 40px 24px 24px;
+    text-align: center;
+  }
+  .footer-credit { font-size: 22px; opacity: 0.85; }
+  .footer-name { font-size: 42px; font-weight: 800; }
+  .footer-meta { font-size: 26px; opacity: 0.95; }
+  .footer-location { font-size: 22px; opacity: 0.85; }
+</style>
+</head>
+<body>
+  <div class="poster">
+    <div class="diagonal-block"></div>
+    <div class="chevrons">
+      <div class="v"></div><div class="v"></div><div class="v"></div>
+      <div class="v"></div><div class="v"></div><div class="v"></div>
+    </div>
+
+    <div class="vote-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="4 12 10 18 20 6"></polyline>
+      </svg>
+    </div>
+
+    <div class="photo-stack">
+      {{#if photoUrls.[1]}}<img class="photo-card back" src="{{photoUrls.[1]}}" />{{/if}}
+      {{#if photoUrls.[0]}}<img class="photo-card front" src="{{photoUrls.[0]}}" />{{else}}<div class="photo-card front photo-placeholder"></div>{{/if}}
+    </div>
+
+    <div class="headline-banner">
+      <div class="stripe">
+        <div class="headline" style="font-weight: {{headlineFontWeightNumeric}};">{{headlineText}}</div>
+      </div>
+    </div>
+
+    <div class="party-banner">
+      <div class="flag-tri"></div>
+      <span>{{party}}</span>
+    </div>
+
+    <div class="slogan-row">
+      <div class="tick">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 12 10 18 20 6"></polyline>
+        </svg>
+      </div>
+      <div class="slogan">আপনার সমর্থনই আমাদের শক্তি</div>
+    </div>
+
+    <div class="footer-bar">
+      <div class="footer-credit">প্রচারে</div>
+      <div class="footer-name">{{name}}</div>
+      <div class="footer-meta">{{designation}}</div>
+      <div class="footer-location">{{district}}, {{thana}}, {{union}}</div>
+    </div>
+  </div>
+</body>
+</html>
