@@ -5,6 +5,8 @@ import {
   PosterFormData,
   PaginatedPosters,
   OccasionType,
+  AiAspectRatio,
+  GenerateAiPosterResponse,
 } from "./posterTypes";
 
 export async function fetchTemplates(occasion?: OccasionType): Promise<TemplateDTO[]> {
@@ -81,4 +83,16 @@ export async function generateQuickPreview(formData: {
     formData
   );
   return data.results;
+}
+
+// AI prompt-to-image generation (separate "AI পোস্টার / ব্যানার জেনারেটর"
+// section). When `image` (a previously generated poster URL) is provided,
+// the request is an EDIT of that poster instead of a fresh generation.
+export async function generateAiPoster(params: {
+  prompt: string;
+  aspectRatio: AiAspectRatio;
+  image?: string;
+}): Promise<GenerateAiPosterResponse> {
+  const { data } = await apiClient.post<GenerateAiPosterResponse>("/generate-poster", params);
+  return data;
 }

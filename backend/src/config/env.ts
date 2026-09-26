@@ -16,6 +16,9 @@ export const env = {
   mongodbUri: required("MONGODB_URI"),
   jwtSecret: required("JWT_SECRET"),
   geminiApiKey: process.env.GEMINI_API_KEY ?? "",
+  // Image model for the AI poster flow — overridable so a model can be
+  // swapped without code edits if Google deprecates the default.
+  geminiImageModel: process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image",
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
     apiKey: process.env.CLOUDINARY_API_KEY ?? "",

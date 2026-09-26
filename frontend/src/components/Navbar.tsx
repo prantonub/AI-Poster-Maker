@@ -35,6 +35,12 @@ export function Navbar() {
           <Link href="/create" className="rounded px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100">
             পোস্টার তৈরি
           </Link>
+          <Link
+            href="/ai-generator"
+            className="rounded px-3 py-1.5 text-sm font-medium text-flagGreen hover:bg-flagGreen/10"
+          >
+            AI পোস্টার / ব্যানার জেনারেটর
+          </Link>
           {user && (
             <Link
               href="/history"

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.quickPreviewSchema = exports.createPosterSchema = void 0;
+exports.generatePosterSchema = exports.AI_ASPECT_RATIOS = exports.quickPreviewSchema = exports.createPosterSchema = void 0;
 const zod_1 = require("zod");
 const mongoose_1 = __importDefault(require("mongoose"));
 const objectIdString = zod_1.z
@@ -44,4 +44,18 @@ exports.quickPreviewSchema = zod_1.z.object({
     thana: zod_1.z.string().trim().max(120).default(""),
     union: zod_1.z.string().trim().max(120).default(""),
     headlineText: zod_1.z.string().trim().min(1, "Headline is required").max(200),
+});
+// --- AI prompt-to-image poster generation (/api/generate-poster) ---
+// Aspect ratios supported by the Gemini image model for this flow.
+exports.AI_ASPECT_RATIOS = ["1:1", "4:5", "9:16", "16:9"];
+exports.generatePosterSchema = zod_1.z.object({
+    prompt: zod_1.z
+        .string()
+        .trim()
+        .min(3, "Prompt must be at least 3 characters")
+        .max(2000, "Prompt must be at most 2000 characters"),
+    aspectRatio: zod_1.z.enum(exports.AI_ASPECT_RATIOS).default("4:5"),
+    // Optional: URL of the previously generated poster to edit. Same Cloudinary
+    // origin rule as uploads — clients can't point us at arbitrary URLs (SSRF).
+    image: cloudinaryUrl.optional(),
 });

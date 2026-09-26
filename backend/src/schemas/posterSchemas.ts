@@ -48,3 +48,23 @@ export const quickPreviewSchema = z.object({
 });
 
 export type QuickPreviewInput = z.infer<typeof quickPreviewSchema>;
+
+// --- AI prompt-to-image poster generation (/api/generate-poster) ---
+
+// Aspect ratios supported by the Gemini image model for this flow.
+export const AI_ASPECT_RATIOS = ["1:1", "4:5", "9:16", "16:9"] as const;
+export type AiAspectRatio = (typeof AI_ASPECT_RATIOS)[number];
+
+export const generatePosterSchema = z.object({
+  prompt: z
+    .string()
+    .trim()
+    .min(3, "Prompt must be at least 3 characters")
+    .max(2000, "Prompt must be at most 2000 characters"),
+  aspectRatio: z.enum(AI_ASPECT_RATIOS).default("4:5"),
+  // Optional: URL of the previously generated poster to edit. Same Cloudinary
+  // origin rule as uploads — clients can't point us at arbitrary URLs (SSRF).
+  image: cloudinaryUrl.optional(),
+});
+
+export type GeneratePosterInput = z.infer<typeof generatePosterSchema>;

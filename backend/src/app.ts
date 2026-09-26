@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth";
 import uploadRoutes from "./routes/upload";
 import templateRoutes from "./routes/templates";
 import posterRoutes from "./routes/posters";
+import generatePosterRoutes from "./routes/generatePoster";
 import adminRoutes from "./routes/admin";
 
 export function createApp(): Application {
@@ -32,6 +33,7 @@ export function createApp(): Application {
   app.use("/api/upload", uploadRoutes);
   app.use("/api/templates", templateRoutes);
   app.use("/api/posters", posterRoutes);
+  app.use("/api/generate-poster", generatePosterRoutes);
   app.use("/api/admin", adminRoutes);
 
   app.use(notFoundHandler);

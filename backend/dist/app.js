@@ -14,6 +14,7 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const upload_1 = __importDefault(require("./routes/upload"));
 const templates_1 = __importDefault(require("./routes/templates"));
 const posters_1 = __importDefault(require("./routes/posters"));
+const generatePoster_1 = __importDefault(require("./routes/generatePoster"));
 const admin_1 = __importDefault(require("./routes/admin"));
 function createApp() {
     const app = (0, express_1.default)();
@@ -32,6 +33,7 @@ function createApp() {
     app.use("/api/upload", upload_1.default);
     app.use("/api/templates", templates_1.default);
     app.use("/api/posters", posters_1.default);
+    app.use("/api/generate-poster", generatePoster_1.default);
     app.use("/api/admin", admin_1.default);
     app.use(errorHandler_1.notFoundHandler);
     app.use(errorHandler_1.errorHandler);
