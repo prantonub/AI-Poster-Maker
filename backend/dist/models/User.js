@@ -8,6 +8,8 @@ const userSchema = new mongoose_1.Schema({
     phone: { type: String, required: true, trim: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
-    createdAt: { type: Date, default: Date.now },
-});
+    isActive: { type: Boolean, default: true },
+    lastLoginAt: { type: Date, default: null },
+    loginCount: { type: Number, default: 0 },
+}, { timestamps: true });
 exports.User = (0, mongoose_1.model)("User", userSchema);

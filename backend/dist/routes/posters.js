@@ -9,6 +9,7 @@ const Poster_1 = require("../models/Poster");
 const Template_1 = require("../models/Template");
 const auth_1 = require("../middleware/auth");
 const rateLimiter_1 = require("../middleware/rateLimiter");
+const platformSettings_1 = require("../middleware/platformSettings");
 const validate_1 = require("../middleware/validate");
 const errorHandler_1 = require("../middleware/errorHandler");
 const posterSchemas_1 = require("../schemas/posterSchemas");
@@ -22,7 +23,7 @@ function requireOwnership(posterUserId, requestUserId) {
     }
 }
 // POST /api/posters — create + kick off generation asynchronously
-router.post("/", auth_1.verifyAuth, rateLimiter_1.createPosterRateLimiter, (0, validate_1.validateBody)(posterSchemas_1.createPosterSchema), (0, errorHandler_1.asyncHandler)(async (req, res) => {
+router.post("/", auth_1.verifyAuth, platformSettings_1.requireGenerationEnabled, rateLimiter_1.createPosterRateLimiter, (0, validate_1.validateBody)(posterSchemas_1.createPosterSchema), (0, errorHandler_1.asyncHandler)(async (req, res) => {
     const { templateId, formData, uploadedPhotoUrls } = req.body;
     const template = await Template_1.Template.findById(templateId);
     if (!template || !template.isActive) {
@@ -48,7 +49,7 @@ router.post("/", auth_1.verifyAuth, rateLimiter_1.createPosterRateLimiter, (0, v
 // POST /api/posters/quick-preview — renders one preview per active template
 // (up to 5) from a single headline/name, without saving anything to Poster
 // history. Used by the homepage's "one prompt, every banner style" demo.
-router.post("/quick-preview", auth_1.verifyAuth, rateLimiter_1.quickPreviewRateLimiter, (0, validate_1.validateBody)(posterSchemas_1.quickPreviewSchema), (0, errorHandler_1.asyncHandler)(async (req, res) => {
+router.post("/quick-preview", auth_1.verifyAuth, platformSettings_1.requireGenerationEnabled, rateLimiter_1.quickPreviewRateLimiter, (0, validate_1.validateBody)(posterSchemas_1.quickPreviewSchema), (0, errorHandler_1.asyncHandler)(async (req, res) => {
     const formData = req.body;
     const templates = await Template_1.Template.find({ isActive: true }).sort({ occasionType: 1 });
     if (templates.length === 0) {
@@ -98,7 +99,7 @@ router.get("/:id", auth_1.verifyAuth, (0, errorHandler_1.asyncHandler)(async (re
     res.json(poster);
 }));
 // POST /api/posters/:id/regenerate — re-run the pipeline, capped retries
-router.post("/:id/regenerate", auth_1.verifyAuth, (0, errorHandler_1.asyncHandler)(async (req, res) => {
+router.post("/:id/regenerate", auth_1.verifyAuth, platformSettings_1.requireGenerationEnabled, (0, errorHandler_1.asyncHandler)(async (req, res) => {
     if (!mongoose_1.default.isValidObjectId(req.params.id)) {
         throw new errorHandler_1.ApiError(400, "Invalid poster id");
     }

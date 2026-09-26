@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiError } from "./errorHandler";
 import { verifyToken, AuthTokenPayload } from "../services/authService";
+import { User } from "../models/User";
 
 // Extend Express's Request type so req.user is typed everywhere downstream.
 declare global {
@@ -27,12 +28,35 @@ export function verifyAuth(req: Request, _res: Response, next: NextFunction) {
   }
 }
 
+/**
+ * Admin gate.
+ *
+ * Unlike the JWT-only check this used to be, the role and account status are
+ * re-read from the database on every admin request. A JWT stays valid for up
+ * to 7 days, so without this a demoted or suspended admin would keep full
+ * control of the platform until their token expired.
+ */
 export function verifyAdmin(req: Request, _res: Response, next: NextFunction) {
   if (!req.user) {
     return next(new ApiError(401, "Authentication required"));
   }
-  if (req.user.role !== "admin") {
-    return next(new ApiError(403, "Admin access required"));
-  }
-  next();
+
+  User.findById(req.user.sub)
+    .select("role isActive")
+    .lean()
+    .then((user) => {
+      if (!user) {
+        return next(new ApiError(401, "Account no longer exists"));
+      }
+      if (!user.isActive) {
+        return next(new ApiError(403, "This account has been suspended"));
+      }
+      if (user.role !== "admin") {
+        return next(new ApiError(403, "Admin access required"));
+      }
+      // Keep the request payload in sync with the authoritative DB state.
+      req.user!.role = user.role;
+      next();
+    })
+    .catch(next);
 }

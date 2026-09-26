@@ -2,6 +2,7 @@ import { Router } from "express";
 import { env } from "../config/env";
 import { verifyAuth } from "../middleware/auth";
 import { createPosterRateLimiter } from "../middleware/rateLimiter";
+import { requireGenerationEnabled } from "../middleware/platformSettings";
 import { validateBody } from "../middleware/validate";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import { generatePosterSchema } from "../schemas/posterSchemas";
@@ -18,6 +19,7 @@ const router = Router();
 router.post(
   "/",
   verifyAuth,
+  requireGenerationEnabled,
   createPosterRateLimiter,
   validateBody(generatePosterSchema),
   asyncHandler(async (req, res) => {

@@ -4,6 +4,7 @@ import { Poster } from "../models/Poster";
 import { Template } from "../models/Template";
 import { verifyAuth } from "../middleware/auth";
 import { createPosterRateLimiter, quickPreviewRateLimiter } from "../middleware/rateLimiter";
+import { requireGenerationEnabled } from "../middleware/platformSettings";
 import { validateBody } from "../middleware/validate";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import { createPosterSchema, quickPreviewSchema } from "../schemas/posterSchemas";
@@ -23,6 +24,7 @@ function requireOwnership(posterUserId: mongoose.Types.ObjectId, requestUserId: 
 router.post(
   "/",
   verifyAuth,
+  requireGenerationEnabled,
   createPosterRateLimiter,
   validateBody(createPosterSchema),
   asyncHandler(async (req, res) => {
@@ -60,6 +62,7 @@ router.post(
 router.post(
   "/quick-preview",
   verifyAuth,
+  requireGenerationEnabled,
   quickPreviewRateLimiter,
   validateBody(quickPreviewSchema),
   asyncHandler(async (req, res) => {
@@ -140,6 +143,7 @@ router.get(
 router.post(
   "/:id/regenerate",
   verifyAuth,
+  requireGenerationEnabled,
   asyncHandler(async (req, res) => {
     if (!mongoose.isValidObjectId(req.params.id)) {
       throw new ApiError(400, "Invalid poster id");

@@ -1,8 +1,89 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { apiClient } from "@/lib/apiClient";
+
+interface PlatformConfig {
+  maintenanceMode: boolean;
+  registrationOpen: boolean;
+  generationEnabled: boolean;
+  siteNotice: string;
+  supportEmail: string;
+}
+
+/**
+ * Site-wide banner driven by the admin panel's platform settings
+ * (Admin → সেটিংস). Fails silently: a banner must never break the app if the
+ * config endpoint is unreachable.
+ */
+export function PlatformBanner() {
+  const [config, setConfig] = useState<PlatformConfig | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    apiClient
+      .get<PlatformConfig>("/auth/config")
+      .then(({ data }) => {
+        if (!cancelled) setConfig(data);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!config) return null;
+
+  const messages: { text: string; className: string }[] = [];
+
+  if (config.maintenanceMode) {
+    messages.push({
+      text: "সাইটটি সাময়িকভাবে মেইন্টেন্যান্সে আছে — পোস্টার তৈরি সাময়িকভাবে বন্ধ রাখা হয়েছে।",
+      className: "bg-amber-100 text-amber-900",
+    });
+  } else if (!config.generationEnabled) {
+    messages.push({
+      text: "পোস্টার তৈরি ফিচার সাময়িকভাবে বন্ধ আছে।",
+      className: "bg-amber-100 text-amber-900",
+    });
+  }
+
+  if (config.siteNotice) {
+    messages.push({ text: config.siteNotice, className: "bg-sky-100 text-sky-900" });
+  }
+
+  if (!config.registrationOpen) {
+    messages.push({
+      text: "নতুন রেজিস্ট্রেশন সাময়িকভাবে বন্ধ আছে।",
+      className: "bg-amber-100 text-amber-900",
+    });
+  }
+
+  if (messages.length === 0) return null;
+
+  return (
+    <div className="space-y-1">
+      {messages.map((message) => (
+        <div key={message.text} className={`px-4 py-2 text-center text-xs ${message.className}`}>
+          {message.text}
+          {config.supportEmail && (
+            <span className="ml-2 hidden sm:inline">
+              সহায়তা:{" "}
+              <a href={`mailto:${config.supportEmail}`} className="underline">
+                {config.supportEmail}
+              </a>
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function Navbar() {
   const { user, logout } = useAuth();
@@ -14,7 +95,9 @@ export function Navbar() {
   }
 
   return (
-    <header className="border-b border-gray-200 bg-white">
+    <>
+      <PlatformBanner />
+      <header className="border-b border-gray-200 bg-white">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-8">
         <Link href="/" className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-flagGreen text-white">
@@ -91,5 +174,6 @@ export function Navbar() {
         </div>
       </div>
     </header>
+    </>
   );
 }

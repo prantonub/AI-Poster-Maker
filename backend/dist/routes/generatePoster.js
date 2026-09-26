@@ -4,6 +4,7 @@ const express_1 = require("express");
 const env_1 = require("../config/env");
 const auth_1 = require("../middleware/auth");
 const rateLimiter_1 = require("../middleware/rateLimiter");
+const platformSettings_1 = require("../middleware/platformSettings");
 const validate_1 = require("../middleware/validate");
 const errorHandler_1 = require("../middleware/errorHandler");
 const posterSchemas_1 = require("../schemas/posterSchemas");
@@ -15,7 +16,7 @@ const router = (0, express_1.Router)();
 // is an EDIT of that previously generated poster ("Edit with Prompt");
 // otherwise it's a fresh generation. The Hugging Face API key stays on the
 // server (HF_API_KEY) and never reaches the frontend.
-router.post("/", auth_1.verifyAuth, rateLimiter_1.createPosterRateLimiter, (0, validate_1.validateBody)(posterSchemas_1.generatePosterSchema), (0, errorHandler_1.asyncHandler)(async (req, res) => {
+router.post("/", auth_1.verifyAuth, platformSettings_1.requireGenerationEnabled, rateLimiter_1.createPosterRateLimiter, (0, validate_1.validateBody)(posterSchemas_1.generatePosterSchema), (0, errorHandler_1.asyncHandler)(async (req, res) => {
     const { prompt, aspectRatio, image } = req.body;
     if (!env_1.env.hfApiKey) {
         throw new errorHandler_1.ApiError(503, "AI generation is not configured yet (HF_API_KEY is missing on the server). Please try again later.");

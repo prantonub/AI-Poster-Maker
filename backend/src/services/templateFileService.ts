@@ -16,3 +16,12 @@ export function readTemplateHtml(fileName: string): string {
 
   return fs.readFileSync(filePath, "utf-8");
 }
+
+// Lets the admin panel flag a Template document whose backing HTML file has
+// gone missing (renamed on disk, or a template created on another machine).
+export function templateFileExists(fileName: string): boolean {
+  if (!fileName || fileName.includes("/") || fileName.includes("\\") || fileName.includes("..")) {
+    return false;
+  }
+  return fs.existsSync(templateFilePath(fileName));
+}

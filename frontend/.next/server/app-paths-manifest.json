@@ -1,11 +1,17 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/login/page": "app/login/page.js",
-  "/history/page": "app/history/page.js",
   "/create/page": "app/create/page.js",
   "/page": "app/page.js",
   "/posters/[id]/page": "app/posters/[id]/page.js",
+  "/login/page": "app/login/page.js",
+  "/ai-generator/page": "app/ai-generator/page.js",
   "/register/page": "app/register/page.js",
+  "/history/page": "app/history/page.js",
+  "/admin/logs/page": "app/admin/logs/page.js",
+  "/admin/system/page": "app/admin/system/page.js",
+  "/admin/templates/page": "app/admin/templates/page.js",
+  "/admin/users/page": "app/admin/users/page.js",
+  "/admin/settings/page": "app/admin/settings/page.js",
   "/admin/page": "app/admin/page.js",
-  "/ai-generator/page": "app/ai-generator/page.js"
+  "/admin/posters/page": "app/admin/posters/page.js"
 }
