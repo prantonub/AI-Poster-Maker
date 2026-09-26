@@ -1,6 +1,6 @@
-# AI Political Poster Maker
+# AI Poster Maker
 
-A full-stack web platform that lets Bangladeshi political workers, committee members, and publicity agents produce ready-to-print political posters — victory day, condolence/tribute, campaign, festival greetings, and Eid — from a short form, with the layout composed automatically.
+A full-stack web platform that lets Bangladeshi workers, committee members, and publicity agents produce ready-to-print  posters — victory day, condolence/tribute, campaign, festival greetings, and Eid — from a short form, with the layout composed automatically.
 
 **Live :** https://ai-poster-maker-prantonub.vercel.app
 
