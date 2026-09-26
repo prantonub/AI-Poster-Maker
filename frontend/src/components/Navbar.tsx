@@ -116,6 +116,14 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Hooks must stay above the /admin early-return below, otherwise navigating
+  // between admin and public pages would change the hook order and crash.
+  // Close the mobile menu after any navigation.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   // The admin section renders its own shell + top bar, so the public navbar
   // (and its banner) would be duplicated chrome there. Hide it entirely.
@@ -203,8 +211,94 @@ export function Navbar() {
               </Link>
             </>
           )}
+
+          {/* Hamburger — the desktop nav above is hidden below the sm breakpoint. */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((open) => !open)}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav"
+            aria-label={mobileOpen ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
+            className="rounded-lg border border-gray-200 p-2 text-gray-700 hover:bg-gray-100 sm:hidden"
+          >
+            {mobileOpen ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M6 6l12 12M18 6L6 18"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 7h16M4 12h16M4 17h16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Mobile dropdown — only rendered while open, and only below sm. */}
+      {mobileOpen && (
+        <nav
+          id="mobile-nav"
+          className="border-t border-gray-200 bg-white px-4 py-2 sm:hidden"
+          aria-label="মোবাইল মেনু"
+        >
+          <ul className="space-y-1">
+            {visibleLinks.map((link) => {
+              const active = isActivePath(pathname, link.href);
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                    className={[
+                      "block rounded-lg px-3 py-2.5 text-sm font-medium transition",
+                      active
+                        ? "bg-flagGreen text-white shadow-sm"
+                        : link.accent
+                        ? "text-flagGreen hover:bg-flagGreen/10"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+                    ].join(" ")}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          {user && (
+            <div className="mt-2 flex items-center justify-between gap-3 border-t border-gray-100 px-3 py-3">
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-flagGreen text-sm font-bold text-white">
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-gray-800">
+                    {user.name}
+                  </span>
+                  <span className="block truncate text-[11px] text-gray-500">{user.email}</span>
+                </span>
+              </span>
+              <button
+                onClick={handleLogout}
+                className="shrink-0 rounded border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >
+                লগ-আউট
+              </button>
+            </div>
+          )}
+        </nav>
+      )}
     </header>
     </>
   );
