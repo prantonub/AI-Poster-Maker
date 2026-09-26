@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { apiClient } from "@/lib/apiClient";
 
@@ -85,14 +85,54 @@ export function PlatformBanner() {
   );
 }
 
+interface NavLink {
+  href: string;
+  label: string;
+  /** Highlighted styling for the AI generator (the site's headline feature). */
+  accent?: boolean;
+  requiresAuth?: boolean;
+  requiresAdmin?: boolean;
+}
+
+const NAV_LINKS: NavLink[] = [
+  { href: "/", label: "হোম" },
+  { href: "/create", label: "পোস্টার তৈরি" },
+  { href: "/ai-generator", label: "AI পোস্টার / ব্যানার জেনারেটর", accent: true },
+  { href: "/history", label: "🗂️ আমার পোস্টারসমূহ", requiresAuth: true },
+  { href: "/admin", label: "অ্যাডমিন", requiresAdmin: true },
+];
+
+/**
+ * Active-page detection. "/" must match exactly, otherwise the home link would
+ * stay highlighted on every route. Nested paths match on a segment boundary so
+ * "/create" never lights up for something like "/create-archive".
+ */
+function isActivePath(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // The admin section renders its own shell + top bar, so the public navbar
+  // (and its banner) would be duplicated chrome there. Hide it entirely.
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
 
   function handleLogout() {
     logout();
     router.push("/");
   }
+
+  const visibleLinks = NAV_LINKS.filter((link) => {
+    if (link.requiresAuth) return !!user;
+    if (link.requiresAdmin) return user?.role === "admin";
+    return true;
+  });
 
   return (
     <>
@@ -112,34 +152,26 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-1 sm:flex">
-          <Link href="/" className="rounded px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100">
-            হোম
-          </Link>
-          <Link href="/create" className="rounded px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100">
-            পোস্টার তৈরি
-          </Link>
-          <Link
-            href="/ai-generator"
-            className="rounded px-3 py-1.5 text-sm font-medium text-flagGreen hover:bg-flagGreen/10"
-          >
-            AI পোস্টার / ব্যানার জেনারেটর
-          </Link>
-          {user && (
-            <Link
-              href="/history"
-              className="rounded border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
-            >
-              🗂️ আমার পোস্টারসমূহ
-            </Link>
-          )}
-          {user?.role === "admin" && (
-            <Link
-              href="/admin"
-              className="rounded border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
-            >
-              অ্যাডমিন
-            </Link>
-          )}
+          {visibleLinks.map((link) => {
+            const active = isActivePath(pathname, link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={[
+                  "rounded-lg px-3 py-1.5 text-sm font-medium transition",
+                  active
+                    ? "bg-flagGreen text-white shadow-sm"
+                    : link.accent
+                    ? "text-flagGreen hover:bg-flagGreen/10"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+                ].join(" ")}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2">
