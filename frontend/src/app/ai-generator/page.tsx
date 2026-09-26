@@ -33,6 +33,7 @@ function AiGenerator() {
   const [error, setError] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [lastRequest, setLastRequest] = useState<GenerationRequest | null>(null);
+  const [basePrompt, setBasePrompt] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [editPrompt, setEditPrompt] = useState("");
   const [downloading, setDownloading] = useState(false);
@@ -57,6 +58,8 @@ function AiGenerator() {
       setImageUrl(data.imageUrl);
       setLastRequest(request);
       setEditMode(false);
+      // A fresh generation resets the design brief; edits build on top of it.
+      if (!request.image) setBasePrompt(request.prompt);
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {
@@ -84,9 +87,14 @@ function AiGenerator() {
       return;
     }
     if (!imageUrl || !lastRequest) return;
+    // Send the original design brief plus the requested change, so the edited
+    // poster keeps the same design instead of starting from scratch.
+    const merged = basePrompt
+      ? `${basePrompt}\n\nপরিবর্তন: ${trimmed}`
+      : trimmed;
     // Edits keep the aspect ratio of the image being edited.
     void runGeneration({
-      prompt: trimmed,
+      prompt: merged,
       aspectRatio: lastRequest.aspectRatio,
       image: imageUrl,
     });

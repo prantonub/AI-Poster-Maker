@@ -18,10 +18,15 @@ exports.env = {
     port: parseInt(process.env.PORT ?? "4000", 10),
     mongodbUri: required("MONGODB_URI"),
     jwtSecret: required("JWT_SECRET"),
-    geminiApiKey: process.env.GEMINI_API_KEY ?? "",
-    // Image model for the AI poster flow — overridable so a model can be
-    // swapped without code edits if Google deprecates the default.
-    geminiImageModel: process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image",
+    // Hugging Face Inference API key — used for AI poster image generation and
+    // for the template style-suggestion text calls. Never exposed to clients.
+    hfApiKey: process.env.HF_API_KEY ?? "",
+    // Model overrides (all optional — sensible defaults below).
+    hfImageModel: process.env.HF_IMAGE_MODEL || "stabilityai/stable-diffusion-3-medium-diffusers",
+    // Optional image-to-image model for "Edit with Prompt". Empty = edits are
+    // re-rendered from a merged prompt instead of editing the source pixels.
+    hfImageEditModel: process.env.HF_IMAGE_EDIT_MODEL || "",
+    hfTextModel: process.env.HF_TEXT_MODEL || "Qwen/Qwen2.5-72B-Instruct:fastest",
     cloudinary: {
         cloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
         apiKey: process.env.CLOUDINARY_API_KEY ?? "",

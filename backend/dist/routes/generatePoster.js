@@ -17,8 +17,8 @@ const router = (0, express_1.Router)();
 // (GEMINI_API_KEY) and never reaches the frontend.
 router.post("/", auth_1.verifyAuth, rateLimiter_1.createPosterRateLimiter, (0, validate_1.validateBody)(posterSchemas_1.generatePosterSchema), (0, errorHandler_1.asyncHandler)(async (req, res) => {
     const { prompt, aspectRatio, image } = req.body;
-    if (!env_1.env.geminiApiKey) {
-        throw new errorHandler_1.ApiError(503, "AI generation is not configured yet (GEMINI_API_KEY is missing on the server). Please try again later.");
+    if (!env_1.env.hfApiKey) {
+        throw new errorHandler_1.ApiError(503, "AI generation is not configured yet (HF_API_KEY is missing on the server). Please try again later.");
     }
     const result = image
         ? await (0, posterImageService_1.editPosterImage)(image, prompt, aspectRatio)

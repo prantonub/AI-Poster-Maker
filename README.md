@@ -49,7 +49,7 @@ npm install
 
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env.local
-# fill in MONGODB_URI, JWT_SECRET, GEMINI_API_KEY, and CLOUDINARY_* in backend/.env
+# fill in MONGODB_URI, JWT_SECRET, HF_API_KEY, and CLOUDINARY_* in backend/.env
 ```
 
 ## Running locally

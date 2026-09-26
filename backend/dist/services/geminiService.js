@@ -3,23 +3,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildStylePrompt = buildStylePrompt;
 exports.callGemini = callGemini;
 exports.parseGeminiStyleResponse = parseGeminiStyleResponse;
-const generative_ai_1 = require("@google/generative-ai");
 const env_1 = require("../config/env");
 const geminiSchemas_1 = require("../schemas/geminiSchemas");
-// Gemini is asked ONLY for a small styling JSON object — never for final
+const HF_ROUTER = "https://router.huggingface.co";
+const HF_TIMEOUT_MS = 45000;
+// The AI is asked ONLY for a small styling JSON object — never for final
 // poster text/pixels. Bangla text is always drawn by the HTML template with
 // the user's exact input, so misspellings from a generative model can never
 // reach the final poster.
 function buildStylePrompt(params) {
-    const { occasionType, headlineText, numPhotos, templateLayoutConfig } = params;
     return [
         "You are a design assistant for Bangladeshi political posters.",
         "You suggest ONLY styling — never generate or alter any poster text.",
         "",
-        `Occasion: ${occasionType}`,
-        `Headline (for tone/context only, do not repeat it back): ${headlineText}`,
-        `Number of uploaded photos: ${numPhotos}`,
-        `Template's default color scheme: ${JSON.stringify(templateLayoutConfig.colorScheme)}`,
+        `Occasion: ${params.occasionType}`,
+        `Headline (for tone/context only, do not repeat it back): ${params.headlineText}`,
+        `Number of uploaded photos: ${params.numPhotos}`,
+        `Template's default color scheme: ${JSON.stringify(params.templateLayoutConfig.colorScheme)}`,
         "",
         "Return STRICT JSON ONLY. No markdown code fences. No preamble. No explanation.",
         "The JSON must match exactly this shape:",
@@ -31,24 +31,37 @@ function buildStylePrompt(params) {
         "}",
     ].join("\n");
 }
-let client = null;
-function getClient() {
-    if (!env_1.env.geminiApiKey) {
-        throw new Error("GEMINI_API_KEY is not configured");
-    }
-    if (!client) {
-        client = new generative_ai_1.GoogleGenerativeAI(env_1.env.geminiApiKey);
-    }
-    return client;
-}
+// Text call via the Hugging Face Inference router (OpenAI-compatible
+// /v1/chat/completions). Throws on failure so callers can fall back to the
+// template's own default styling.
 async function callGemini(prompt) {
+    if (!env_1.env.hfApiKey) {
+        throw new Error("HF_API_KEY is not configured");
+    }
     const start = Date.now();
-    const model = getClient().getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    const latencyMs = Date.now() - start;
-    const rawText = result.response.text();
-    const tokensUsed = result.response.usageMetadata?.totalTokenCount;
-    return { rawText, tokensUsed, latencyMs };
+    const res = await fetch(`${HF_ROUTER}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${env_1.env.hfApiKey}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            model: env_1.env.hfTextModel,
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.4,
+        }),
+        signal: AbortSignal.timeout(HF_TIMEOUT_MS),
+    });
+    if (!res.ok) {
+        const detail = (await res.text().catch(() => "")).slice(0, 200);
+        throw new Error(`Hugging Face text request failed (${res.status}): ${detail}`);
+    }
+    const json = (await res.json());
+    const rawText = json.choices?.[0]?.message?.content;
+    if (typeof rawText !== "string") {
+        throw new Error("Hugging Face returned no text content");
+    }
+    return { rawText, tokensUsed: json.usage?.total_tokens, latencyMs: Date.now() - start };
 }
 // Defensive parse: Gemini sometimes wraps JSON in ```json fences or adds
 // stray whitespace/preamble despite instructions. Strip fences, try/catch

@@ -13,8 +13,8 @@ const router = Router();
 // POST /api/generate-poster — prompt-to-image AI poster generation.
 // Body: { prompt, aspectRatio, image? }. When `image` is present the request
 // is an EDIT of that previously generated poster ("Edit with Prompt");
-// otherwise it's a fresh generation. The Gemini API key stays on the server
-// (GEMINI_API_KEY) and never reaches the frontend.
+// otherwise it's a fresh generation. The Hugging Face API key stays on the
+// server (HF_API_KEY) and never reaches the frontend.
 router.post(
   "/",
   verifyAuth,
@@ -23,10 +23,10 @@ router.post(
   asyncHandler(async (req, res) => {
     const { prompt, aspectRatio, image } = req.body;
 
-    if (!env.geminiApiKey) {
+    if (!env.hfApiKey) {
       throw new ApiError(
         503,
-        "AI generation is not configured yet (GEMINI_API_KEY is missing on the server). Please try again later."
+        "AI generation is not configured yet (HF_API_KEY is missing on the server). Please try again later."
       );
     }
 

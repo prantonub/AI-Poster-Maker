@@ -12,6 +12,7 @@
   "dependencies": {
     "@google/genai": "^2.24.0",
     "@google/generative-ai": "^0.21.0",
+    "@huggingface/inference": "^4.13.30",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
     "cors": "^2.8.5",

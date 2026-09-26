@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { OCCASION_LABELS, OccasionType } from "@/lib/posterTypes";
-import { QuickPreviewSection } from "@/components/QuickPreviewSection";
 
 const OCCASIONS: { key: OccasionType; blurb: string; color: string }[] = [
   { key: "victory_day", blurb: "বিজয় দিবসের পোস্টার তৈরি করুন", color: "bg-flagGreen" },
@@ -35,8 +34,6 @@ export default function Home() {
             </Link>
           ))}
         </div>
-
-        <QuickPreviewSection />
       </div>
     </main>
   );
