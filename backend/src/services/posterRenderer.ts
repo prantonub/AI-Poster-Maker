@@ -1,5 +1,6 @@
 import Handlebars from "handlebars";
 import { Types } from "mongoose";
+import type { Page } from "puppeteer";
 import { Poster } from "../models/Poster";
 import { Template, ITemplate, OccasionType } from "../models/Template";
 import { GenerationLog } from "../models/GenerationLog";
@@ -21,12 +22,61 @@ export async function renderPosterHtml(
   return compiled(context);
 }
 
+// The backend tsconfig compiles for Node (no DOM lib), but the callback below
+// executes inside Chromium — declaring the one browser global we use lets it
+// type-check while still emitting a plain `document` identifier.
+declare const document: any;
+
+// Hard cap on waiting for images/fonts after the DOM is ready. A slow or
+// unreachable image CDN must never fail poster creation — after this wait we
+// screenshot whatever has rendered.
+const ASSET_WAIT_TIMEOUT_MS = 15_000;
+
+async function waitForPageAssets(page: Page): Promise<void> {
+  // The trailing .catch swallows a late rejection (e.g. page closed while
+  // image requests are still in flight) so it can't surface as an unhandled
+  // rejection after we've stopped waiting.
+  const assetsReady = page
+    .evaluate(async () => {
+      const images: any[] = Array.from(document.images);
+      await Promise.all(
+        images.map((img) =>
+          img.complete
+            ? undefined
+            : new Promise<void>((resolve) => {
+                img.addEventListener("load", resolve, { once: true });
+                img.addEventListener("error", resolve, { once: true });
+              })
+        )
+      );
+      if (document.fonts && document.fonts.status !== "loaded") {
+        await document.fonts.ready;
+      }
+    })
+    .catch(() => undefined);
+
+  await Promise.race([
+    assetsReady,
+    new Promise<void>((resolve) => setTimeout(resolve, ASSET_WAIT_TIMEOUT_MS)),
+  ]);
+}
+
 export async function screenshotHtml(html: string): Promise<Buffer> {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
     await page.setViewport({ width: PRINT_WIDTH, height: PRINT_HEIGHT });
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    // Wait for the DOM only — NOT for network idle. With `networkidle0` a
+    // single hanging image request kept the connection count above zero and
+    // tripped Puppeteer's 30s navigation timeout ("Navigation timeout of
+    // 30000 ms exceeded"), failing the whole poster. Images and fonts are
+    // awaited separately by waitForPageAssets with a hard cap instead, so a
+    // slow CDN can delay the screenshot but can never fail it.
+    await page.setContent(html, { waitUntil: "domcontentloaded" });
+    await waitForPageAssets(page);
+    // Give the compositor a beat to paint before capturing, since we no
+    // longer get the implicit ~500ms that networkidle0 used to add.
+    await new Promise((resolve) => setTimeout(resolve, 100));
     const buffer = await page.screenshot({ type: "png" });
     return Buffer.from(buffer);
   } finally {

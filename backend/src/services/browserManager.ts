@@ -9,7 +9,14 @@ export function getBrowser(): Promise<Browser> {
   if (!browserPromise) {
     browserPromise = puppeteer.launch({
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        // Chromium's default 64 MB /dev/shm inside Docker is too small to
+        // render a 1200x1600 poster reliably; a full shm stalls the renderer
+        // and surfaces as a navigation timeout. Use container tmpfs instead.
+        "--disable-dev-shm-usage",
+      ],
       // In the Docker deploy image we point this at the apt-installed
       // Chromium instead of Puppeteer's own bundled download. Locally
       // this env var is unset, so Puppeteer uses its bundled binary.
