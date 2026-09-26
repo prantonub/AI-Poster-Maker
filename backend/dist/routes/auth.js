@@ -40,7 +40,9 @@ router.post("/login", (0, validate_1.validateBody)(authSchemas_1.loginSchema), (
     }
     // Checked before the password comparison so a suspended account gets a
     // clear message, and so bcrypt never runs for a locked-out user.
-    if (!user.isActive) {
+    // Note the strict `=== false`: accounts created before the isActive field
+    // existed have it undefined, and those must keep working.
+    if (user.isActive === false) {
         throw new errorHandler_1.ApiError(403, "This account has been suspended. Please contact support.");
     }
     const valid = await (0, authService_1.comparePassword)(password, user.passwordHash);

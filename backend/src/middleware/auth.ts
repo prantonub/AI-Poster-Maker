@@ -48,7 +48,7 @@ export function verifyAdmin(req: Request, _res: Response, next: NextFunction) {
       if (!user) {
         return next(new ApiError(401, "Account no longer exists"));
       }
-      if (!user.isActive) {
+      if (user.isActive === false) {
         return next(new ApiError(403, "This account has been suspended"));
       }
       if (user.role !== "admin") {

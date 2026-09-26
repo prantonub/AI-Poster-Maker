@@ -38,7 +38,7 @@ function verifyAdmin(req, _res, next) {
         if (!user) {
             return next(new errorHandler_1.ApiError(401, "Account no longer exists"));
         }
-        if (!user.isActive) {
+        if (user.isActive === false) {
             return next(new errorHandler_1.ApiError(403, "This account has been suspended"));
         }
         if (user.role !== "admin") {

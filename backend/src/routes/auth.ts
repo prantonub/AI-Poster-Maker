@@ -63,7 +63,9 @@ router.post(
 
     // Checked before the password comparison so a suspended account gets a
     // clear message, and so bcrypt never runs for a locked-out user.
-    if (!user.isActive) {
+    // Note the strict `=== false`: accounts created before the isActive field
+    // existed have it undefined, and those must keep working.
+    if (user.isActive === false) {
       throw new ApiError(403, "This account has been suspended. Please contact support.");
     }
 

@@ -20,8 +20,9 @@ const router = Router();
 
 /** Guards against an admin locking everyone (including themselves) out. */
 async function assertNotLastActiveAdmin(target: IUser) {
-  if (target.role !== "admin" || !target.isActive) return;
-  const activeAdmins = await User.countDocuments({ role: "admin", isActive: true });
+  if (target.role !== "admin" || target.isActive === false) return;
+  // $ne: false also counts legacy admins whose isActive field is missing.
+  const activeAdmins = await User.countDocuments({ role: "admin", isActive: { $ne: false } });
   if (activeAdmins <= 1) {
     throw new ApiError(400, "This is the last active admin — promote another admin first.");
   }

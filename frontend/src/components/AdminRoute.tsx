@@ -11,7 +11,9 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
-      router.replace("/login");
+      // Carry the attempted location so login can send the user back here
+      // instead of dropping them on the default landing page.
+      router.replace("/login?next=/admin");
     } else if (user.role !== "admin") {
       router.replace("/");
     }

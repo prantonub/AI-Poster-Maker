@@ -17,9 +17,10 @@ const helpers_1 = require("./helpers");
 const router = (0, express_1.Router)();
 /** Guards against an admin locking everyone (including themselves) out. */
 async function assertNotLastActiveAdmin(target) {
-    if (target.role !== "admin" || !target.isActive)
+    if (target.role !== "admin" || target.isActive === false)
         return;
-    const activeAdmins = await User_1.User.countDocuments({ role: "admin", isActive: true });
+    // $ne: false also counts legacy admins whose isActive field is missing.
+    const activeAdmins = await User_1.User.countDocuments({ role: "admin", isActive: { $ne: false } });
     if (activeAdmins <= 1) {
         throw new errorHandler_1.ApiError(400, "This is the last active admin — promote another admin first.");
     }

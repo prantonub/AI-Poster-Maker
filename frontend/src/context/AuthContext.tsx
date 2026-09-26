@@ -17,7 +17,8 @@ interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  /** Resolves with the signed-in user so callers can route by role. */
+  login: (email: string, password: string) => Promise<AuthUser>;
   register: (
     name: string,
     email: string,
@@ -53,12 +54,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (email: string, password: string) => {
+    async (email: string, password: string): Promise<AuthUser> => {
       const { data } = await apiClient.post<AuthResponse>("/auth/login", {
         email,
         password,
       });
       persistSession(data);
+      return data.user;
     },
     [persistSession]
   );
