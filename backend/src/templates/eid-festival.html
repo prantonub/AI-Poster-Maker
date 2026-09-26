@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @page { margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1200px;
+    height: 1600px;
+    font-family: "Noto Sans Bengali", "SolaimanLipi", sans-serif;
+    overflow: hidden;
+  }
+  .poster {
+    position: relative;
+    width: 1200px;
+    height: 1600px;
+    background: linear-gradient(180deg, #0b2b28 0%, {{primaryColor}} 55%, #0b2b28 100%);
+    overflow: hidden;
+  }
+
+  /* Ornamental geometric border */
+  .ornament-border { position: absolute; top: 30px; left: 30px; right: 30px; bottom: 30px; border: 3px solid {{accentColor}}; }
+  .ornament-border::before {
+    content: "";
+    position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+    border: 1px solid {{accentColor}}aa;
+  }
+  .corner-motif {
+    position: absolute; width: 46px; height: 46px;
+    border: 3px solid {{accentColor}};
+    border-radius: 50%;
+  }
+  .corner-motif::after {
+    content: "";
+    position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px;
+    border-radius: 50%;
+    background: {{accentColor}};
+  }
+  .corner-motif.tl { top: 14px; left: 14px; }
+  .corner-motif.tr { top: 14px; right: 14px; }
+  .corner-motif.bl { bottom: 14px; left: 14px; }
+  .corner-motif.br { bottom: 14px; right: 14px; }
+
+  /* Twinkling stars */
+  .star {
+    position: absolute; background: {{accentColor}};
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  }
+
+  /* Crescent moon (two overlapping circles) */
+  .moon-wrap { position: absolute; top: 110px; left: 50%; transform: translateX(-70px); }
+  .moon-glow {
+    position: absolute; top: -40px; left: -40px;
+    width: 220px; height: 220px; border-radius: 50%;
+    background: radial-gradient(circle, {{accentColor}}55 0%, transparent 70%);
+  }
+  .moon-full {
+    width: 140px; height: 140px; border-radius: 50%;
+    background: {{accentColor}};
+  }
+  .moon-mask {
+    position: absolute; top: 0; left: 34px;
+    width: 140px; height: 140px; border-radius: 50%;
+    background: {{primaryColor}};
+  }
+
+  /* Mosque silhouette */
+  .mosque {
+    position: absolute; bottom: 780px; left: 0; right: 0;
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 3;
+  }
+  .minaret {
+    width: 22px; background: {{accentColor}};
+    border-radius: 4px 4px 0 0;
+  }
+  .minaret.short { height: 130px; }
+  .minaret.tall { height: 190px; }
+  .minaret::before {
+    content: "";
+    position: absolute; margin-top: -14px; margin-left: -4px;
+    width: 30px; height: 14px; border-radius: 50% 50% 0 0;
+    background: {{accentColor}};
+  }
+  .dome-wrap { position: relative; margin: 0 4px; }
+  .dome {
+    width: 160px; height: 90px;
+    background: {{accentColor}};
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  }
+  .dome-base { width: 200px; height: 70px; background: {{accentColor}}; }
+  .dome-spire {
+    position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 34px; background: {{accentColor}};
+  }
+
+  .cloud-bank { position: absolute; bottom: 700px; left: -40px; right: -40px; height: 90px; }
+  .cloud-bank .puff { position: absolute; bottom: 0; background: #ffffff; border-radius: 50%; opacity: 0.95; }
+  .cloud-bank .base { position: absolute; bottom: 0; left: 0; right: 0; height: 50px; background: #ffffff; opacity: 0.95; }
+
+  .headline-wrap {
+    position: absolute; top: 900px; left: 60px; right: 60px;
+    text-align: center;
+  }
+  .headline {
+    color: {{accentColor}};
+    font-size: 82px;
+    line-height: 1.2;
+    text-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  }
+  .headline-rule {
+    margin: 20px auto 0;
+    width: 200px; height: 3px;
+    background: linear-gradient(90deg, transparent, {{accentColor}}, transparent);
+  }
+
+  .party-pill {
+    position: absolute; top: 1100px; left: 50%; transform: translateX(-50%);
+    background: {{accentColor}};
+    color: {{primaryColor}};
+    padding: 14px 40px;
+    border-radius: 999px;
+    font-size: 30px;
+    font-weight: 800;
+  }
+
+  .footer-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 260px;
+    background: #0b2b28;
+    border-top: 2px solid {{accentColor}};
+    color: white;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 24px;
+    text-align: center;
+  }
+  .footer-credit { font-size: 22px; opacity: 0.8; color: {{accentColor}}; letter-spacing: 2px; }
+  .footer-name { font-size: 42px; font-weight: 800; }
+  .footer-meta { font-size: 26px; opacity: 0.95; }
+  .footer-location { font-size: 22px; opacity: 0.8; }
+</style>
+</head>
+<body>
+  <div class="poster">
+    <div class="ornament-border"></div>
+    <div class="corner-motif tl"></div>
+    <div class="corner-motif tr"></div>
+    <div class="corner-motif bl"></div>
+    <div class="corner-motif br"></div>
+
+    <div class="star" style="width:12px;height:12px;top:90px;left:120px;"></div>
+    <div class="star" style="width:8px;height:8px;top:180px;left:220px;"></div>
+    <div class="star" style="width:10px;height:10px;top:130px;left:950px;"></div>
+    <div class="star" style="width:14px;height:14px;top:240px;left:1020px;"></div>
+    <div class="star" style="width:8px;height:8px;top:320px;left:80px;"></div>
+
+    <div class="moon-wrap">
+      <div class="moon-glow"></div>
+      <div class="moon-full"></div>
+      <div class="moon-mask"></div>
+    </div>
+
+    <div class="mosque">
+      <div class="minaret short"></div>
+      <div class="dome-wrap">
+        <div class="dome-spire"></div>
+        <div class="dome"></div>
+        <div class="dome-base"></div>
+      </div>
+      <div class="minaret tall"></div>
+      <div class="dome-wrap">
+        <div class="dome-spire"></div>
+        <div class="dome"></div>
+        <div class="dome-base"></div>
+      </div>
+      <div class="minaret short"></div>
+    </div>
+
+    <div class="cloud-bank">
+      <div class="base"></div>
+      <div class="puff" style="width:140px;height:140px;left:30px;bottom:10px;"></div>
+      <div class="puff" style="width:180px;height:180px;left:220px;bottom:0px;"></div>
+      <div class="puff" style="width:160px;height:160px;left:450px;bottom:15px;"></div>
+      <div class="puff" style="width:190px;height:190px;left:650px;bottom:0px;"></div>
+      <div class="puff" style="width:160px;height:160px;left:880px;bottom:10px;"></div>
+      <div class="puff" style="width:140px;height:140px;left:1040px;bottom:15px;"></div>
+    </div>
+
+    <div class="headline-wrap">
+      <div class="headline" style="font-weight: {{headlineFontWeightNumeric}};">{{headlineText}}</div>
+      <div class="headline-rule"></div>
+    </div>
+
+    <div class="party-pill">{{party}}</div>
+
+    <div class="footer-bar">
+      <div class="footer-credit">প্রচারে</div>
+      <div class="footer-name">{{name}}</div>
+      <div class="footer-meta">{{designation}}</div>
+      <div class="footer-location">{{district}}, {{thana}}, {{union}}</div>
+    </div>
+  </div>
+</body>
+</html>

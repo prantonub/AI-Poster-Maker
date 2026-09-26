@@ -4,6 +4,11 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { env } from "./config/env";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
+import authRoutes from "./routes/auth";
+import uploadRoutes from "./routes/upload";
+import templateRoutes from "./routes/templates";
+import posterRoutes from "./routes/posters";
+import adminRoutes from "./routes/admin";
 
 export function createApp(): Application {
   const app = express();
@@ -23,7 +28,11 @@ export function createApp(): Application {
     res.json({ status: "ok", time: new Date().toISOString() });
   });
 
-  // Phase 3+ will mount /api/auth, /api/templates, /api/posters, /api/upload here.
+  app.use("/api/auth", authRoutes);
+  app.use("/api/upload", uploadRoutes);
+  app.use("/api/templates", templateRoutes);
+  app.use("/api/posters", posterRoutes);
+  app.use("/api/admin", adminRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

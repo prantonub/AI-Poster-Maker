@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
+import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "AI Political Poster Maker",
@@ -13,7 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="bn">
-      <body className="min-h-screen bg-gray-50 text-gray-900">{children}</body>
+      <body className="min-h-screen bg-gray-50 text-gray-900">
+        <AuthProvider>
+          <Navbar />
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

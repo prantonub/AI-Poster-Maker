@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @page { margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1200px;
+    height: 1600px;
+    font-family: "Noto Sans Bengali", "SolaimanLipi", sans-serif;
+    overflow: hidden;
+  }
+  .poster {
+    position: relative;
+    width: 1200px;
+    height: 1600px;
+    background: radial-gradient(circle at 50% 30%, #3a3a3a 0%, #1c1c1c 55%, #0d0d0d 100%);
+    overflow: hidden;
+  }
+
+  /* Ornate double-line frame with corner diamonds */
+  .frame-outer {
+    position: absolute; top: 34px; left: 34px; right: 34px; bottom: 34px;
+    border: 2px solid {{accentColor}};
+  }
+  .frame-inner {
+    position: absolute; top: 44px; left: 44px; right: 44px; bottom: 44px;
+    border: 1px solid {{accentColor}}99;
+  }
+  .corner-mark {
+    position: absolute; width: 14px; height: 14px;
+    background: {{accentColor}};
+    transform: rotate(45deg);
+  }
+  .corner-mark.tl { top: 27px; left: 27px; }
+  .corner-mark.tr { top: 27px; right: 27px; }
+  .corner-mark.bl { bottom: 27px; left: 27px; }
+  .corner-mark.br { bottom: 27px; right: 27px; }
+
+  /* Draped mourning ribbon, top-right */
+  .ribbon {
+    position: absolute; top: 0; right: 70px; z-index: 5;
+  }
+  .ribbon .strip {
+    position: absolute; width: 46px; height: 190px;
+    background: linear-gradient(180deg, #111 0%, #000 100%);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+  }
+  .ribbon .strip.left { transform: rotate(-14deg); left: -10px; clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 100%, 0 88%); }
+  .ribbon .strip.right { transform: rotate(14deg); left: 30px; clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 100%, 0 88%); }
+  .ribbon .knot {
+    position: absolute; top: 4px; left: 8px;
+    width: 54px; height: 34px; border-radius: 50%;
+    background: #111;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+  }
+
+  /* Candle with soft flame glow */
+  .candle-wrap {
+    position: absolute; top: 110px; left: 50%; transform: translateX(-50%);
+    text-align: center;
+  }
+  .flame-glow {
+    width: 90px; height: 90px;
+    margin: 0 auto -10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffd88a 0%, {{accentColor}}66 45%, transparent 75%);
+  }
+  .flame {
+    width: 20px; height: 32px;
+    margin: -78px auto 0;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    background: linear-gradient(180deg, #fff3c4 0%, #f5a623 55%, {{secondaryColor}} 100%);
+  }
+  .candle-body {
+    width: 26px; height: 90px;
+    margin: 0 auto;
+    background: linear-gradient(180deg, #f5f0e6 0%, #ded6c4 100%);
+    border-radius: 2px;
+  }
+  .candle-base {
+    width: 70px; height: 14px;
+    margin: 0 auto;
+    background: {{accentColor}};
+    border-radius: 3px;
+  }
+
+  /* Spotlight portrait */
+  .photo-spotlight {
+    position: absolute; top: 330px; left: 50%; transform: translateX(-50%);
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .photo-placeholder {
+    background: radial-gradient(circle, {{accentColor}}55, #1c1c1c);
+  }
+  .photo-single {
+    width: 300px; height: 300px; border-radius: 50%;
+    border: 4px solid {{accentColor}};
+    outline: 2px solid rgba(255,255,255,0.5);
+    outline-offset: 6px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+    object-fit: cover;
+    background: #333;
+  }
+
+  .headline-wrap {
+    position: absolute; top: 800px; left: 70px; right: 70px;
+    text-align: center;
+  }
+  .divider-row {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    margin-bottom: 22px;
+  }
+  .divider-line { width: 90px; height: 1px; background: {{accentColor}}; }
+  .divider-diamond {
+    width: 10px; height: 10px; background: {{accentColor}};
+    transform: rotate(45deg);
+  }
+  .headline {
+    color: #f4efe4;
+    font-size: 72px;
+    line-height: 1.25;
+    letter-spacing: 2px;
+    text-shadow: 0 3px 10px rgba(0,0,0,0.6);
+  }
+  .remembrance-line {
+    margin-top: 26px;
+    color: {{accentColor}};
+    font-size: 32px;
+    font-style: italic;
+    letter-spacing: 1px;
+  }
+
+  .footer-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 300px;
+    background: #0d0d0d;
+    border-top: 2px solid {{accentColor}};
+    color: #f4efe4;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 24px;
+    text-align: center;
+  }
+  .footer-credit { font-size: 22px; opacity: 0.75; letter-spacing: 3px; color: {{accentColor}}; }
+  .footer-name { font-size: 42px; font-weight: 800; }
+  .footer-meta { font-size: 26px; opacity: 0.9; }
+  .footer-location { font-size: 22px; opacity: 0.7; }
+</style>
+</head>
+<body>
+  <div class="poster">
+    <div class="frame-outer"></div>
+    <div class="frame-inner"></div>
+    <div class="corner-mark tl"></div>
+    <div class="corner-mark tr"></div>
+    <div class="corner-mark bl"></div>
+    <div class="corner-mark br"></div>
+
+    <div class="ribbon">
+      <div class="knot"></div>
+      <div class="strip left"></div>
+      <div class="strip right"></div>
+    </div>
+
+    <div class="candle-wrap">
+      <div class="flame-glow"></div>
+      <div class="flame"></div>
+      <div class="candle-body"></div>
+      <div class="candle-base"></div>
+    </div>
+
+    <div class="photo-spotlight">
+      {{#if photoUrls.[0]}}<img class="photo-single" src="{{photoUrls.[0]}}" />{{else}}<div class="photo-single photo-placeholder"></div>{{/if}}
+    </div>
+
+    <div class="headline-wrap">
+      <div class="divider-row">
+        <div class="divider-line"></div>
+        <div class="divider-diamond"></div>
+        <div class="divider-line"></div>
+      </div>
+      <div class="headline" style="font-weight: {{headlineFontWeightNumeric}};">{{headlineText}}</div>
+      <div class="remembrance-line">গভীর শ্রদ্ধা ও ভালোবাসায় স্মরণ করছি</div>
+    </div>
+
+    <div class="footer-bar">
+      <div class="footer-credit">প্রচারে</div>
+      <div class="footer-name">{{name}}</div>
+      <div class="footer-meta">{{designation}}</div>
+      <div class="footer-location">{{district}}, {{thana}}, {{union}}</div>
+    </div>
+  </div>
+</body>
+</html>

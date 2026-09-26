@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @page { margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1200px;
+    height: 1600px;
+    font-family: "Noto Sans Bengali", "SolaimanLipi", sans-serif;
+    overflow: hidden;
+  }
+  .poster {
+    position: relative;
+    width: 1200px;
+    height: 1600px;
+    background: linear-gradient(160deg, {{accentColor}} 0%, {{secondaryColor}} 55%, {{primaryColor}} 100%);
+    overflow: hidden;
+  }
+
+  /* Bunting flag string across the top */
+  .bunting {
+    position: absolute; top: 0; left: 0; right: 0; height: 90px;
+    display: flex; justify-content: space-evenly;
+    padding: 0 20px;
+  }
+  .bunting .flag {
+    width: 46px; height: 62px;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    margin-top: -6px;
+  }
+  .bunting .flag:nth-child(4n+1) { background: #ffffff; }
+  .bunting .flag:nth-child(4n+2) { background: {{primaryColor}}; }
+  .bunting .flag:nth-child(4n+3) { background: {{accentColor}}; }
+  .bunting .flag:nth-child(4n+4) { background: {{secondaryColor}}; }
+
+  /* Scattered confetti dots */
+  .confetti { position: absolute; border-radius: 50%; opacity: 0.85; }
+
+  /* Starburst photo frame */
+  .photo-frame-wrap {
+    position: absolute; top: 160px; left: 0; right: 0; margin: 0 auto;
+    width: 420px; height: 420px;
+  }
+  .starburst {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: #ffffff;
+    background: conic-gradient(
+      from 0deg,
+      #ffffff 0deg 14deg, transparent 14deg 28deg,
+      #ffffff 28deg 42deg, transparent 42deg 56deg,
+      #ffffff 56deg 70deg, transparent 70deg 84deg,
+      #ffffff 84deg 98deg, transparent 98deg 112deg,
+      #ffffff 112deg 126deg, transparent 126deg 140deg,
+      #ffffff 140deg 154deg, transparent 154deg 168deg,
+      #ffffff 168deg 182deg, transparent 182deg 196deg,
+      #ffffff 196deg 210deg, transparent 210deg 224deg,
+      #ffffff 224deg 238deg, transparent 238deg 252deg,
+      #ffffff 252deg 266deg, transparent 266deg 280deg,
+      #ffffff 280deg 294deg, transparent 294deg 308deg,
+      #ffffff 308deg 322deg, transparent 322deg 336deg,
+      #ffffff 336deg 350deg, transparent 350deg 360deg
+    );
+    border-radius: 18%;
+    opacity: 0.95;
+  }
+  .photo-cutout {
+    position: absolute; top: 44px; left: 44px; right: 44px; bottom: 44px;
+    border-radius: 50%;
+    border: 8px solid #ffffff;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.3);
+    object-fit: cover;
+    background: #fff3;
+  }
+
+  .headline-wrap {
+    position: absolute; top: 680px; left: 60px; right: 60px;
+    text-align: center;
+  }
+  .headline {
+    color: #ffffff;
+    font-size: 88px;
+    line-height: 1.2;
+    -webkit-text-stroke: 3px {{primaryColor}};
+    text-shadow: 0 6px 0 rgba(0,0,0,0.15), 0 14px 20px rgba(0,0,0,0.25);
+  }
+
+  .balloon { position: absolute; border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%; }
+  .balloon::after {
+    content: "";
+    position: absolute; bottom: -34px; left: 50%; width: 2px; height: 34px;
+    background: rgba(255,255,255,0.6);
+  }
+
+  .party-pill {
+    position: absolute; top: 1010px; left: 50%; transform: translateX(-50%);
+    background: #ffffff;
+    color: {{primaryColor}};
+    padding: 16px 42px;
+    border-radius: 999px;
+    font-size: 34px;
+    font-weight: 800;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  }
+
+  .footer-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 270px;
+    background: rgba(0,0,0,0.28);
+    backdrop-filter: blur(2px);
+    color: white;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 24px;
+    text-align: center;
+    border-top: 3px solid #ffffff77;
+  }
+  .footer-credit { font-size: 22px; opacity: 0.9; letter-spacing: 2px; }
+  .footer-name { font-size: 42px; font-weight: 800; }
+  .footer-meta { font-size: 26px; opacity: 0.95; }
+  .footer-location { font-size: 22px; opacity: 0.85; }
+</style>
+</head>
+<body>
+  <div class="poster">
+    <div class="bunting">
+      <div class="flag"></div><div class="flag"></div><div class="flag"></div><div class="flag"></div>
+      <div class="flag"></div><div class="flag"></div><div class="flag"></div><div class="flag"></div>
+      <div class="flag"></div><div class="flag"></div><div class="flag"></div><div class="flag"></div>
+    </div>
+
+    <div class="confetti" style="width:16px;height:16px;top:140px;left:90px;background:#fff;"></div>
+    <div class="confetti" style="width:12px;height:12px;top:220px;left:1080px;background:{{primaryColor}};"></div>
+    <div class="confetti" style="width:20px;height:20px;top:600px;left:60px;background:#fff;"></div>
+    <div class="confetti" style="width:14px;height:14px;top:640px;left:1120px;background:{{accentColor}};"></div>
+    <div class="confetti" style="width:18px;height:18px;top:1030px;left:120px;background:#fff;"></div>
+    <div class="confetti" style="width:16px;height:16px;top:1060px;left:1050px;background:{{primaryColor}};"></div>
+
+    <div class="balloon" style="width:70px;height:86px;top:130px;left:130px;background:{{primaryColor}};"></div>
+    <div class="balloon" style="width:60px;height:74px;top:200px;left:960px;background:#ffffff;"></div>
+
+    <div class="photo-frame-wrap">
+      <div class="starburst"></div>
+      {{#if photoUrls.[0]}}<img class="photo-cutout" src="{{photoUrls.[0]}}" />{{else}}<div class="photo-cutout" style="background:rgba(255,255,255,0.25);"></div>{{/if}}
+    </div>
+
+    <div class="headline-wrap">
+      <div class="headline" style="font-weight: {{headlineFontWeightNumeric}};">{{headlineText}}</div>
+    </div>
+
+    <div class="party-pill">{{party}}</div>
+
+    <div class="footer-bar">
+      <div class="footer-credit">প্রচারে</div>
+      <div class="footer-name">{{name}}</div>
+      <div class="footer-meta">{{designation}}</div>
+      <div class="footer-location">{{district}}, {{thana}}, {{union}}</div>
+    </div>
+  </div>
+</body>
+</html>
