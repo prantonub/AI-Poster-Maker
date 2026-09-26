@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 
-const TEMPLATES_DIR = path.join(__dirname, "..", "..", "templates");
+const TEMPLATES_DIR = path.join(__dirname, "..", "templates");
 
 export function templateFilePath(fileName: string): string {
   return path.join(TEMPLATES_DIR, fileName);

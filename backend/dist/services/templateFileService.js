@@ -7,7 +7,7 @@ exports.templateFilePath = templateFilePath;
 exports.readTemplateHtml = readTemplateHtml;
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
-const TEMPLATES_DIR = path_1.default.join(__dirname, "..", "..", "templates");
+const TEMPLATES_DIR = path_1.default.join(__dirname, "..", "templates");
 function templateFilePath(fileName) {
     return path_1.default.join(TEMPLATES_DIR, fileName);
 }
