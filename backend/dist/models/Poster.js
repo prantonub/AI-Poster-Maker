@@ -4,7 +4,8 @@ exports.Poster = void 0;
 const mongoose_1 = require("mongoose");
 const formDataSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
-    designation: { type: String, required: true },
+    // Not collected by the create form anymore — optional, defaults to "".
+    designation: { type: String, default: "" },
     party: { type: String, default: "" },
     district: { type: String, default: "" },
     thana: { type: String, default: "" },

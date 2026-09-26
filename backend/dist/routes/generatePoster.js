@@ -13,8 +13,8 @@ const router = (0, express_1.Router)();
 // POST /api/generate-poster — prompt-to-image AI poster generation.
 // Body: { prompt, aspectRatio, image? }. When `image` is present the request
 // is an EDIT of that previously generated poster ("Edit with Prompt");
-// otherwise it's a fresh generation. The Gemini API key stays on the server
-// (GEMINI_API_KEY) and never reaches the frontend.
+// otherwise it's a fresh generation. The Hugging Face API key stays on the
+// server (HF_API_KEY) and never reaches the frontend.
 router.post("/", auth_1.verifyAuth, rateLimiter_1.createPosterRateLimiter, (0, validate_1.validateBody)(posterSchemas_1.generatePosterSchema), (0, errorHandler_1.asyncHandler)(async (req, res) => {
     const { prompt, aspectRatio, image } = req.body;
     if (!env_1.env.hfApiKey) {

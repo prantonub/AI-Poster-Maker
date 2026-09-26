@@ -24,13 +24,10 @@ function CreatePosterWizard() {
   const [templatesLoading, setTemplatesLoading] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
 
-  const [form, setForm] = useState<Omit<PosterFormData, "occasion">>({
+  // Only নাম and হেডলাইন টেক্সট are collected now; the remaining
+  // designation/party/district/thana/union values are sent as empty strings.
+  const [form, setForm] = useState<{ name: string; headlineText: string }>({
     name: "",
-    designation: "",
-    party: "",
-    district: "",
-    thana: "",
-    union: "",
     headlineText: "",
   });
 
@@ -77,7 +74,18 @@ function CreatePosterWizard() {
     setSubmitting(true);
     try {
       const uploadedPhotoUrls = await uploadPhotos(photos);
-      const fullFormData: PosterFormData = { ...form, occasion };
+      // Fields removed from the form are sent empty — the backend still stores
+      // the full shape (and the HTML templates simply render them blank).
+      const fullFormData: PosterFormData = {
+        name: form.name,
+        designation: "",
+        party: "",
+        district: "",
+        thana: "",
+        union: "",
+        headlineText: form.headlineText,
+        occasion,
+      };
       const poster = await createPoster(templateId, fullFormData, uploadedPhotoUrls);
       router.push(`/posters/${poster._id}`);
     } catch (err) {
@@ -169,11 +177,6 @@ function CreatePosterWizard() {
           {(
             [
               ["name", "নাম"],
-              ["designation", "পদবি"],
-              ["party", "দল/সংগঠন"],
-              ["district", "জেলা"],
-              ["thana", "থানা"],
-              ["union", "ইউনিয়ন/ওয়ার্ড"],
             ] as [keyof typeof form, string][]
           ).map(([key, label]) => (
             <div key={key} className="space-y-1">
@@ -204,7 +207,7 @@ function CreatePosterWizard() {
               পেছনে
             </button>
             <button
-              disabled={!form.name || !form.designation || !form.headlineText}
+              disabled={!form.name || !form.headlineText}
               onClick={() => setStep(4)}
               className="w-2/3 rounded bg-flagGreen px-4 py-3 font-semibold text-white disabled:opacity-40"
             >

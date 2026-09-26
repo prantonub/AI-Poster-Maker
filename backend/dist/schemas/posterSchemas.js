@@ -11,7 +11,9 @@ const objectIdString = zod_1.z
     .refine((v) => mongoose_1.default.isValidObjectId(v), { message: "Invalid id" });
 const formDataSchema = zod_1.z.object({
     name: zod_1.z.string().trim().min(1, "Name is required").max(120),
-    designation: zod_1.z.string().trim().min(1, "Designation is required").max(120),
+    // No longer collected by the create form (only নাম + হেডলাইন টেক্সট are),
+    // so it stays optional and defaults to an empty string.
+    designation: zod_1.z.string().trim().max(120).default(""),
     party: zod_1.z.string().trim().max(120).default(""),
     district: zod_1.z.string().trim().max(120).default(""),
     thana: zod_1.z.string().trim().max(120).default(""),

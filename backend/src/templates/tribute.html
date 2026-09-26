@@ -190,8 +190,8 @@
     <div class="footer-bar">
       <div class="footer-credit">প্রচারে</div>
       <div class="footer-name">{{name}}</div>
-      <div class="footer-meta">{{designation}}</div>
-      <div class="footer-location">{{district}}, {{thana}}, {{union}}</div>
+      {{#if designation}}<div class="footer-meta">{{designation}}</div>{{/if}}
+      {{#if district}}<div class="footer-location">{{district}}, {{thana}}, {{union}}</div>{{/if}}
     </div>
   </div>
 </body>

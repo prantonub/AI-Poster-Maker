@@ -7,7 +7,9 @@ const objectIdString = z
 
 const formDataSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
-  designation: z.string().trim().min(1, "Designation is required").max(120),
+  // No longer collected by the create form (only নাম + হেডলাইন টেক্সট are),
+  // so it stays optional and defaults to an empty string.
+  designation: z.string().trim().max(120).default(""),
   party: z.string().trim().max(120).default(""),
   district: z.string().trim().max(120).default(""),
   thana: z.string().trim().max(120).default(""),

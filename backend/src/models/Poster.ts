@@ -31,7 +31,8 @@ export interface IPoster extends Document {
 const formDataSchema = new Schema<PosterFormData>(
   {
     name: { type: String, required: true },
-    designation: { type: String, required: true },
+    // Not collected by the create form anymore — optional, defaults to "".
+    designation: { type: String, default: "" },
     party: { type: String, default: "" },
     district: { type: String, default: "" },
     thana: { type: String, default: "" },
