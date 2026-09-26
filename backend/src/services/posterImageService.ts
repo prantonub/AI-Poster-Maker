@@ -1,5 +1,6 @@
 import { env } from "../config/env";
 import { ApiError } from "../middleware/errorHandler";
+import { getBrowser } from "./browserManager";
 
 // Hugging Face Inference Providers. Raw task endpoint format is:
 //   POST https://router.huggingface.co/{provider}/models/{model}
@@ -26,32 +27,49 @@ const IMAGE_SIZES: Record<AspectRatio, { width: number; height: number }> = {
   "16:9": { width: 1280, height: 720 },
 };
 
-// Internal professional design instruction: tells the model the *kind* of
-// artifact to produce (a high-quality Bengali/social-media poster). The
-// USER's prompt stays in control of the actual design (occasion, wording,
-// colors, mood) — this instruction only sets professional design standards.
+// Internal professional design instruction: asks the model for the
+// ARTWORK of a high-quality Bengali social-media poster. The USER's prompt
+// stays in control of the design (occasion, colors, mood).
+//
+// The model is deliberately asked for a *text-free decorative background*.
+// Diffusion models cannot shape Bengali conjuncts (ড্ড, র্ক, ষ্ঠ …) and paint
+// garbled fake lettering instead, so all wording is typeset afterwards by
+// composeWithBanglaText() with a real Bangla font in Chromium — that text is
+// always sharp, correctly shaped and readable.
 const DESIGN_INSTRUCTION = [
-  "Professional social-media poster design, flat vector illustration style with clean shapes, soft gradients and a cohesive premium color palette.",
-  "Finished, ready-to-post poster layout with strong visual hierarchy: one clear focal point, balanced composition, generous margins, nothing cramped or overflowing.",
-  "Use elegant Bengali (Bangla) script for any Bangla wording, keeping the requested wording exactly.",
-  "Decorative motifs should suit a Bengali/Bangladeshi audience.",
-  "No watermark, no app UI, no placeholder/lorem-ipsum text, no photorealistic photo of a poster.",
+  "Decorative background artwork for a social media poster: purely ornamental pattern, abstract and symmetrical.",
+  "Bengali-inspired festive motifs — floral and geometric arabesque, ornamental border frames, lanterns, crescents, stars and filigree — as suited to the brief.",
+  "Flat vector illustration, clean shapes, soft gradients, cohesive premium palette, clean uncluttered empty center.",
+  "CRITICAL: artwork only. Absolutely no text, no letters, no script, no numbers, no writing, no symbols that look like writing, no signage, no banner, no watermark.",
 ].join(" ");
 
 // Applied when a real image-to-image model is configured (HF_IMAGE_EDIT_MODEL).
+// The model must not repaint lettering — the wording is typeset afterwards.
 const EDIT_INSTRUCTION = [
-  "Edit the attached poster according to the instruction. Keep everything else — composition, wording, typography and colors not mentioned — as close to the original as possible.",
+  "Edit the attached poster artwork according to the instruction. Keep the composition, colors and motifs that are not mentioned as close to the original as possible.",
+  "Do not draw or alter any text or lettering: the image must stay free of writing, and keep calm open space in the lower third.",
 ].join(" ");
 
-const NEGATIVE_PROMPT =
-  "blurry, low quality, distorted, jpeg artifacts, watermark, lorem ipsum, cluttered layout, ugly typography, oversaturated";
+// Strongly suppresses the garbled lettering SD3 likes to hallucinate.
+const NEGATIVE_PROMPT = [
+  "text, words, lettering, letters, typography, writing, handwriting, calligraphy, caption, headline, title, slogan, subtitle, alphabet, script",
+  "numbers, digits, signboard, sign, banner, placard, poster with text, logo, label, seal, stamp, watermark, signature",
+  "gibberish text, garbled letters, fake calligraphy, mangled script, invented symbols, meaningless characters",
+  "blurry, low quality, distorted, jpeg artifacts, cluttered layout, oversaturated, photo of a poster, mockup",
+].join(", ");
 
 function buildGeneratePrompt(userPrompt: string): string {
-  return `${DESIGN_INSTRUCTION} Design brief from the user: ${userPrompt}`;
+  return [
+    DESIGN_INSTRUCTION,
+    `Visual direction from the user (describe the artwork only, never render any wording): ${userPrompt}`,
+  ].join("\n\n");
 }
 
 function buildFallbackEditPrompt(instruction: string): string {
-  return `${DESIGN_INSTRUCTION} This is an updated version of a previously generated poster. Update requested: ${instruction}`;
+  return [
+    DESIGN_INSTRUCTION,
+    `This is an updated version of a previously generated poster. Visual change requested: ${instruction}`,
+  ].join("\n\n");
 }
 
 // Maps Hugging Face HTTP failures onto user-friendly ApiErrors. Also logged
@@ -88,11 +106,104 @@ async function toFriendlyError(res: globalThis.Response): Promise<ApiError> {
   return new ApiError(502, "Hugging Face returned an unexpected response. Please try again.");
 }
 
+// Real Bangla families, in priority order. The Docker image installs
+// fonts-beng/fonts-beng-extra (Noto Sans Bengali, Kalpurush, …) and Windows
+// ships Kalpurush/Vrinda, so one stack covers both environments.
+const BANGLA_FONT_STACK =
+  '"Noto Sans Bengali", "Kalpurush", "Vrinda", "Nirmala UI", "SolaimanLipi", "Shonar Bangla", sans-serif';
+
+function escapeHtml(value: string): string {
+  const map: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  };
+  return value.replace(/[&<>"']/g, (c) => map[c]);
+}
+
+// Headline = the opening clause of the brief, caption = the rest. Any
+// "পরিবর্তন:" (edit instruction) tail is dropped so an edited poster keeps
+// showing its original brief.
+function derivePosterText(prompt: string): { headline: string; caption: string } {
+  const brief = prompt.split("পরিবর্তন:")[0] ?? prompt;
+  const cleaned = brief.replace(/\s+/g, " ").trim();
+  if (!cleaned) return { headline: "", caption: "" };
+
+  // Prefer the first sentence; if that is very short, also try a comma break.
+  let headline =
+    cleaned.split(/[.!?।—]/).map((s) => s.trim()).filter(Boolean)[0] ?? cleaned;
+  if (headline.length < 14) {
+    const byComma = headline.split(/,/).map((s) => s.trim()).filter(Boolean)[0] ?? headline;
+    if (byComma.length >= 14) headline = byComma;
+  }
+
+  headline = headline.slice(0, 60);
+  const rest = cleaned.slice(headline.length).replace(/^[.!?।—,\s]+/, "").trim();
+  return { headline, caption: rest.slice(0, 200) };
+}
+
+// Typesets the Bangla wording over the AI artwork using Chromium + a real
+// Bangla font. This is what makes the text perfectly legible — the diffusion
+// model never touches the glyphs. Returns a PNG.
+async function composeWithBanglaText(
+  baseImage: { base64: string; mimeType: string },
+  width: number,
+  height: number,
+  prompt: string
+): Promise<GeneratedPosterImage> {
+  const { headline, caption } = derivePosterText(prompt);
+  const headlinePx = Math.max(26, Math.round(width * 0.062));
+  const captionPx = Math.max(15, Math.round(width * 0.03));
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"><style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:${width}px;height:${height}px;overflow:hidden;background:#000}
+    .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .band{position:absolute;left:0;right:0;bottom:0;text-align:center;
+      padding:${Math.round(height * 0.055)}px ${Math.round(width * 0.06)}px ${Math.round(height * 0.035)}px;
+      background:linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.72) 45%,rgba(0,0,0,0.92) 100%)}
+    .headline{font-family:${BANGLA_FONT_STACK};font-size:${headlinePx}px;font-weight:800;
+      line-height:1.25;color:#ffffff;text-shadow:0 4px 20px rgba(0,0,0,0.7)}
+    .caption{font-family:${BANGLA_FONT_STACK};font-size:${captionPx}px;font-weight:500;
+      line-height:1.45;color:rgba(255,255,255,0.92);margin-top:${Math.round(height * 0.012)}px;
+      text-shadow:0 2px 12px rgba(0,0,0,0.75)}
+  </style></head><body>
+    <img class="art" src="data:${baseImage.mimeType};base64,${baseImage.base64}" />
+    ${
+      headline
+        ? `<div class="band"><div class="headline">${escapeHtml(headline)}</div>${
+            caption ? `<div class="caption">${escapeHtml(caption)}</div>` : ""
+          }</div>`
+        : ""
+    }
+  </body></html>`;
+
+  const browser = await getBrowser();
+  const page = await browser.newPage();
+  try {
+    await page.setViewport({ width, height });
+    await page.setContent(html, { waitUntil: "load", timeout: 30_000 });
+    // Give the Bangla font a moment to be ready, then let it paint.
+    await Promise.race([
+      page.evaluate(() => (globalThis as any).document?.fonts?.ready).catch(() => undefined),
+      new Promise<void>((resolve) => setTimeout(resolve, 3000)),
+    ]);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    const png = await page.screenshot({ type: "png" });
+    return { mimeType: "image/png", base64: Buffer.from(png).toString("base64") };
+  } finally {
+    await page.close();
+  }
+}
+
 // One HTTP call to the HF router. `inputs` is a text prompt (text-to-image)
 // or a base64 image (image-to-image); the response is the raw image bytes.
 async function callImageModel(
   model: string,
-  payload: { inputs: string; parameters: Record<string, unknown> }
+  payload: { inputs: string; parameters: Record<string, unknown> },
+  poster: { width: number; height: number; prompt: string }
 ): Promise<GeneratedPosterImage> {
   if (!env.hfApiKey) {
     throw new ApiError(
@@ -129,7 +240,14 @@ async function callImageModel(
     throw new ApiError(502, "Hugging Face returned an empty image. Please try again.");
   }
 
-  return { mimeType: contentType, base64: bytes.toString("base64") };
+  // Typeset the Bangla wording over the AI artwork with a real font so the
+  // text is always sharp and readable.
+  return composeWithBanglaText(
+    { mimeType: contentType, base64: bytes.toString("base64") },
+    poster.width,
+    poster.height,
+    poster.prompt
+  );
 }
 
 // Generates a brand-new poster image from a natural-language prompt.
@@ -138,10 +256,14 @@ export async function generatePosterImage(
   aspectRatio: AspectRatio
 ): Promise<GeneratedPosterImage> {
   const { width, height } = IMAGE_SIZES[aspectRatio];
-  return callImageModel(env.hfImageModel, {
-    inputs: buildGeneratePrompt(userPrompt),
-    parameters: { width, height, negative_prompt: NEGATIVE_PROMPT },
-  });
+  return callImageModel(
+    env.hfImageModel,
+    {
+      inputs: buildGeneratePrompt(userPrompt),
+      parameters: { width, height, negative_prompt: NEGATIVE_PROMPT },
+    },
+    { width, height, prompt: userPrompt }
+  );
 }
 
 const MAX_SOURCE_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
@@ -188,16 +310,24 @@ export async function editPosterImage(
 
   if (env.hfImageEditModel) {
     const sourceImage = await fetchImageAsBase64(imageUrl);
-    return callImageModel(env.hfImageEditModel, {
-      inputs: sourceImage,
-      parameters: { prompt: `${EDIT_INSTRUCTION} Change: ${instruction}`, width, height },
-    });
+    return callImageModel(
+      env.hfImageEditModel,
+      {
+        inputs: sourceImage,
+        parameters: { prompt: `${EDIT_INSTRUCTION} Change: ${instruction}`, width, height },
+      },
+      { width, height, prompt: instruction }
+    );
   }
 
-  return callImageModel(env.hfImageModel, {
-    inputs: buildFallbackEditPrompt(instruction),
-    parameters: { width, height, negative_prompt: NEGATIVE_PROMPT },
-  });
+  return callImageModel(
+    env.hfImageModel,
+    {
+      inputs: buildFallbackEditPrompt(instruction),
+      parameters: { width, height, negative_prompt: NEGATIVE_PROMPT },
+    },
+    { width, height, prompt: instruction }
+  );
 }
 
 
